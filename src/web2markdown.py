@@ -3,6 +3,7 @@
 """
 Usage:
   echo "https://aws.amazon.com/" | web2markdown.py
+  echo "https://aws.amazon.com/" | web2markdown.py --engine jina
   echo "https://aws.amazon.com/" | web2markdown.py --engine firecrawl
   echo "https://aws.amazon.com/" | web2markdown.py --engine playwright
   echo "https://aws.amazon.com/" | web2markdown.py --engine textfromwebsite
@@ -44,6 +45,21 @@ def html_to_text(url: str) -> str:
         return h.handle(html)
     except ImportError:
         raise "Please install html2text using 'pip install html2text'"
+
+
+def jina_to_markdown(url: str) -> str:
+    """
+    Use Jina AI's web scraper to convert web content to markdown.
+    """
+    try:
+        response = requests.get(f"https://r.jina.ai/{url}")    
+        if response.status_code == 200:
+            return response.text
+        else:
+            raise Exception(f"Failed to fetch: {response.status_code}")
+    except Exception as e:
+        logger.error(f"Error using Jina AI: {e}")
+        raise
 
 
 def firecrawl_to_markdown(url, api_key = FIRECRAWL_API_KEY) -> str:
@@ -166,6 +182,8 @@ def text_from_website(url: str) -> str:
 def main(user_input, engine):
     if engine == 'html2text':
         print(html_to_text(user_input))
+    elif engine == 'jina':
+        print(jina_to_markdown(user_input))
     elif engine == 'firecrawl':
         print(firecrawl_to_markdown(user_input))
     elif engine == 'playwright':
@@ -186,7 +204,7 @@ def get_stdin():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convert a webpage to markdown.")
-    parser.add_argument("--engine", choices=['html2text', 'firecrawl', 'playwright', 'textfromwebsite'],
+    parser.add_argument("--engine", choices=['jina', 'html2text', 'firecrawl', 'playwright', 'textfromwebsite'],
                         default='html2text',
                         help="Specify the engine to use for conversion")
     args = parser.parse_args()
