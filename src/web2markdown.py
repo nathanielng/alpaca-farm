@@ -3,8 +3,9 @@
 """
 Usage:
   echo "https://aws.amazon.com/" | web2markdown.py
+  echo "https://aws.amazon.com/" | web2markdown.py --engine firecrawl
   echo "https://aws.amazon.com/" | web2markdown.py --engine playwright
-  echo "https://aws.amazon.com/blogs/devops/amazon-q-developer-agentic-coding-experience/" | web2markdown.py --engine textfromwebsite
+  echo "https://aws.amazon.com/" | web2markdown.py --engine textfromwebsite
 
 Installation:
   uv pip install html2text
@@ -56,28 +57,8 @@ def firecrawl_to_markdown(url, api_key = FIRECRAWL_API_KEY) -> str:
         from firecrawl import FirecrawlApp
         app = FirecrawlApp(api_key=api_key)
         formats = ['markdown']  # ['markdown', 'html']
-        result = app.scrape_url(url, params={
-            'formats': formats,
-        })
-        return result['markdown']
-    except ImportError:
-        raise "Please install firecrawl using 'pip install firecrawl'"
-
-
-def firecrawl_crawl_site(url, api_key = FIRECRAWL_API_KEY) -> str:
-    """
-    Crawl entire website
-    """
-    if not api_key:
-        raise ValueError("API key not provided and FIRECRAWL_API_KEY environment variable not set")
-    try:
-        from firecrawl import FirecrawlApp
-        app = FirecrawlApp(api_key=api_key)
-        crawl_result = app.crawl_url(url, params={
-            'limit': 100,
-            'scrapeOptions': {'formats': ['markdown']}
-        })        
-        return crawl_result
+        response = app.scrape(url, formats=formats)  # <class 'firecrawl.v2.types.Document'>
+        return response.markdown
     except ImportError:
         raise "Please install firecrawl using 'pip install firecrawl'"
 
